@@ -70,8 +70,6 @@ foreach($products as $product){
     $newInstanceSt['epv1']          = $product->epv1;
     $newInstanceSt['iva1incl']      = $product->iva1incl;
     $newInstanceSt['familia']       = $product->familia;
-    $newInstanceSt['usr2']          = $product->modelo;
-    $newInstanceSt['usr1']          = $product->marca;
 
     //#3.1 - fulfill extensions fields
     $newInstanceSt['u6526_st_extra_fields']['ref_base']     = $product->refBase;
@@ -87,6 +85,9 @@ foreach($products as $product){
         logData($msg);
         continue;
     }
+
+    $newInstanceSt['usr2']          = $product->modelo;
+    $newInstanceSt['usr1']          = $product->marca;
 
     //#5 - Save product
     $newInstanceSt = DRIVE_saveInstance("St", $newInstanceSt);
