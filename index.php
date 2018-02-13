@@ -108,6 +108,8 @@ foreach($products as $product){
 	$newSlInstance['cm'] = 1;
 	$newSlInstance['cmdesc'] = 'V/Fatura';
 
+	$newSlInstance['qtt'] = $product->stock;
+
 	//#6.1 Act
 	$newSlInstance = DRIVE_actEntiy('Sl', $newSlInstance);
 
@@ -115,8 +117,7 @@ foreach($products as $product){
 	$msg = "Stock Created!<br><br>";
     echo $msg;
     logData($msg);
-	
-    exit(1);    
+	  
 }
 
 
