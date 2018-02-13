@@ -5,9 +5,9 @@ require('libs/excel-reader/php-excel-reader/excel_reader2.php');
 require('libs/excel-reader/SpreadsheetReader.php');
 
 //Define constants
-define("excelFile", 'LegoWear-PS18.xlsx'); //Index of Excel Sheet to Read
+define("excelFile", 'articles.xlsx'); //Index of Excel Sheet to Read
 define("sheetToRead", 4); //Index of Excel Sheet to Read
-define("backendUrl", "https://sis04.drivefx.net/E252DC0A/PHCWS/REST");//TODO change for client
+define("backendUrl", "https://sis05.drivefx.net/D265FFB9/PHCWS/REST");//TODO change for client
 $_SESSION['driveCredentials'] = array(
 	userCode=>"suporte",
 	password=>"12345678",
@@ -98,10 +98,24 @@ foreach($products as $product){
         continue;
     }
 
-    $msg = "Product created with ref = " .$newInstanceSt['ref']. " <br><br>";
+    $msg = "Product created with ref = " .$newInstanceSt['ref']. " <br> Creating Stock mov<br>";
     echo $msg;
     logData($msg);
 
+	//#6 - Create Stock Mov.
+	$newSlInstance = DRIVE_getNeStockFromRef($newInstanceSt['ststamp']);
+
+	$newSlInstance['cm'] = 1;
+	$newSlInstance['cmdesc'] = 'V/Fatura';
+
+	//#6.1 Act
+	$newSlInstance = DRIVE_actEntiy('Sl', $newSlInstance);
+
+	DRIVE_saveInstance('Sl', $newSlInstance);
+	$msg = "Stock Created!<br><br>";
+    echo $msg;
+    logData($msg);
+	
     exit(1);    
 }
 
@@ -112,6 +126,83 @@ foreach($products as $product){
 /**
  * DRIVE WS
  */
+//Get New Instance (Entity= Cl , Bo, St)
+function DRIVE_getNeStockFromRef($originstamp){
+
+	global $ch;
+
+	$url = backendUrl . "/SlWS/getNewInstanceFromReference";
+	$params =  array('parameters' => '
+					[
+						{
+							"addonOwner": "",
+							"ChangedFields": {},
+							"isLazyLoaded": false,
+							"logInfo": "",
+							"Operation": 0,
+							"ousrdata": "1900-01-01T00:00:00.000Z",
+							"ousrhora": "",
+							"ousrinis": "",
+							"revisionNumber": 0,
+							"syshist": false,
+							"usrdata": "1900-01-01T00:00:00.000Z",
+							"usrhora": "",
+							"usrinis": "",
+							"key": "origin",
+							"value": "st"
+						},
+						{
+							"addonOwner": "",
+							"ChangedFields": {},
+							"isLazyLoaded": false,
+							"logInfo": "",
+							"Operation": 0,
+							"ousrdata": "1900-01-01T00:00:00.000Z",
+							"ousrhora": "",
+							"ousrinis": "",
+							"revisionNumber": 0,
+							"syshist": false,
+							"usrdata": "1900-01-01T00:00:00.000Z",
+							"usrhora": "",
+							"usrinis": "",
+							"key": "originstamp",
+							"value": "'.$originstamp.'"
+						},
+						{
+							"addonOwner": "",
+							"ChangedFields": {},
+							"isLazyLoaded": false,
+							"logInfo": "",
+							"Operation": 0,
+							"ousrdata": "1900-01-01T00:00:00.000Z",
+							"ousrhora": "",
+							"ousrinis": "",
+							"revisionNumber": 0,
+							"syshist": false,
+							"usrdata": "1900-01-01T00:00:00.000Z",
+							"usrhora": "",
+							"usrinis": "",
+							"key": "destination",
+							"value": "SL"
+						}
+						]
+	
+	');
+
+	$response=DRIVE_Request($ch, $url, $params);
+
+	if(empty($response)){
+		return null;
+	}
+	if(isset($response['messages'][0]['messageCodeLocale'])){
+		return null;
+	}
+
+
+	return $response['result'][0];
+}
+
+
 //Get New Instance (Entity= Cl , Bo, St)
 function DRIVE_getNewInstance($entity, $ndos){
 
@@ -283,7 +374,8 @@ function EXCEL_reader(){
 class Product {
 
     //properties (DRIVE_ST)
-    public $ref = '';
+	public $ref = '';
+	public $stock = 0;
     public $codigo = '';
     public $design = '';    
     public $desctec = '';    
@@ -301,16 +393,17 @@ class Product {
     //New instance
     public function __construct($excelRow) {
         $this->refBase      = (string)$excelRow[0]; //Drive EXT
-        $this->ref          = $excelRow[0] .'|'. $excelRow[2] .'|'. $excelRow[3];
-        $this->codigo       = (string)$excelRow[4];
-        $this->design       = (string)$excelRow[5];
-        $this->designEN     = (string)$excelRow[6]; //Drive EXT
-        $this->desctec      = (string)$excelRow[7];
-        $this->desctecEN    = (string)$excelRow[8]; //Drive EXT
-        $this->epv1         = $excelRow[9];
-        $this->familia      = (string)$excelRow[10];
-        $this->modelo       = (string)$excelRow[12];
-        $this->marca        = (string)$excelRow[13];        
+		$this->ref          = $excelRow[0] .'|'. $excelRow[3] .'|'. $excelRow[4];
+		$this->stock       	= $excelRow[1];
+        $this->codigo       = (string)$excelRow[5];
+        $this->design       = (string)$excelRow[6];
+        $this->designEN     = (string)$excelRow[7]; //Drive EXT
+        $this->desctec      = (string)$excelRow[8];
+        $this->desctecEN    = (string)$excelRow[9]; //Drive EXT
+        $this->epv1         = $excelRow[10];
+        $this->familia      = (string)$excelRow[11];
+        $this->modelo       = (string)$excelRow[13];
+        $this->marca        = (string)$excelRow[14];        
     }
 
 }
