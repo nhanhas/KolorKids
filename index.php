@@ -74,7 +74,9 @@ foreach($products as $product){
     //#3.1 - fulfill extensions fields
     $newInstanceSt['u6526_st_extra_fields']['ref_base']     = $product->refBase;
     $newInstanceSt['u6526_st_extra_fields']['design_en']    = $product->designEN;    
-    $newInstanceSt['u6526_st_extra_fields']['desctec_en']   = $product->desctecEN;
+	$newInstanceSt['u6526_st_extra_fields']['desctec_en']   = $product->desctecEN;
+	$newInstanceSt['u6526_st_extra_fields']['color']   		= $product->color;
+	$newInstanceSt['u6526_st_extra_fields']['size']   		= $product->size;
 
 
     //#4 - an sync entity
@@ -117,7 +119,7 @@ foreach($products as $product){
 	$msg = "Stock Created!<br><br>";
     echo $msg;
     logData($msg);
-	  
+	  exit(1);
 }
 
 
@@ -389,7 +391,9 @@ class Product {
     //properties (DRIVE_ST_EXT)
     public $refBase = '';
     public $designEN = '';
-    public $desctecEN = '';
+	public $desctecEN = '';
+	public $color = '';
+	public $size = '';
 
     //New instance
     public function __construct($excelRow) {
@@ -404,7 +408,12 @@ class Product {
         $this->epv1         = $excelRow[10];
         $this->familia      = (string)$excelRow[11];
         $this->modelo       = (string)$excelRow[13];
-        $this->marca        = (string)$excelRow[14];        
+		$this->marca        = (string)$excelRow[14];        
+		
+
+		$this->color    	= (string)$excelRow[2]; //Drive EXT
+		$this->size    		= (string)$excelRow[4]; //Drive EXT
+
     }
 
 }
